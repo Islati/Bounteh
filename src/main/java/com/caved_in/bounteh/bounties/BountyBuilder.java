@@ -8,6 +8,8 @@ public class BountyBuilder {
 	private UUID bountyId;
 	private UUID targetId;
 	private UUID issuerId;
+	private String issuerName;
+	private String targetName;
 	private double bountyAmount;
 	private long timeIssued;
 	private long timeExpired;
@@ -16,25 +18,39 @@ public class BountyBuilder {
 		this.bountyId = bountyId;
 	}
 
-	public BountyBuilder withTarget(UUID id) {
+	public BountyBuilder targetId(UUID id) {
 		this.targetId = id;
 		return this;
 	}
 
-	public BountyBuilder withTarget(Player player) {
-		return withTarget(player.getUniqueId());
+	public BountyBuilder target(Player player) {
+		targetName = player.getName();
+		return targetId(player.getUniqueId());
 	}
 
-	public BountyBuilder withIssuer(Player player) {
-		return withIssuer(player.getUniqueId());
+	public BountyBuilder targetName(String name) {
+		targetName = name;
+		return this;
 	}
 
-	public BountyBuilder withIssuer(UUID id) {
+	public BountyBuilder issuer(Player player) {
+		this.issuerName = player.getName();
+		return issuerId(player.getUniqueId());
+	}
+
+	public BountyBuilder issuerId(UUID id) {
 		this.issuerId = id;
 		return this;
 	}
 
-	public BountyBuilder withAmount(double amount) {
+
+	public BountyBuilder issuerName(String name) {
+		this.issuerName = name;
+		return this;
+	}
+
+
+	public BountyBuilder worth(double amount) {
 		this.bountyAmount = amount;
 		return this;
 	}
@@ -56,6 +72,8 @@ public class BountyBuilder {
 		bounty.setWorth(bountyAmount);
 		bounty.setIssueTime(timeIssued);
 		bounty.setExpireTime(timeExpired);
+		bounty.setTargetName(targetName);
+		bounty.setPlayerName(issuerName);
 		return bounty;
 	}
 }

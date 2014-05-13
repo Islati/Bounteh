@@ -23,8 +23,15 @@ public class InitBountyThread implements Runnable {
 
 	@Override
 	public void run(){
-		String targetName = Players.getNameFromUUID(bounty.getTargetId());
-		String issuerName = Players.getNameFromUUID(bounty.getIssuerId());
+		String targetName = null;
+		String issuerName = null;
+		try {
+			targetName = Players.getNameFromUUID(bounty.getTargetId());
+			issuerName = Players.getNameFromUUID(bounty.getIssuerId());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
 		Set<UUID> hunterIds = Bounteh.database.getAllHuntersForBounty(bounty.getBountyId());
 		Commons.debug("Loaded " + hunterIds.size() + " hunters to the bounty on " + targetName);
 		bounty.initHunters(hunterIds);

@@ -7,12 +7,14 @@ import com.caved_in.bounteh.config.Configuration;
 import com.caved_in.bounteh.listeners.PlayerDeathListener;
 import com.caved_in.bounteh.listeners.PlayerJoinListener;
 import com.caved_in.bounteh.listeners.PlayerQuitListener;
+import com.caved_in.bounteh.players.Hunters;
 import com.caved_in.bounteh.sql.ServerDatabaseConnector;
 import com.caved_in.bounteh.threads.BountyExpirationCheckThread;
 import com.caved_in.bounteh.threads.GetAllBountiesCallable;
 import com.caved_in.commons.Commons;
 import com.caved_in.commons.commands.CommandController;
 import com.caved_in.commons.config.SqlConfiguration;
+import com.caved_in.commons.player.Players;
 import com.caved_in.commons.plugin.Plugins;
 import com.caved_in.commons.threading.executors.BukkitExecutors;
 import com.caved_in.commons.threading.executors.BukkitScheduledExecutorService;
@@ -22,6 +24,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -77,6 +80,10 @@ public class Bounteh extends JavaPlugin {
 
 		//Create the task to check for expired bounties
 		Commons.threadManager.registerSynchRepeatTask("Bounty Expiration Check",new BountyExpirationCheckThread(), TimeHandler.getTimeInTicks(10, TimeType.MINUTE),TimeHandler.getTimeInTicks(2,TimeType.MINUTE));
+
+		for (Player player : Players.allPlayers()) {
+			Hunters.addData(player);
+		}
 	}
 
 	@Override

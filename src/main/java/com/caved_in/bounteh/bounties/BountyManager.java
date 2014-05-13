@@ -34,22 +34,24 @@ public class BountyManager {
 	}
 
 	public static boolean completeBounty(UUID targetId, UUID hunterId) {
-		Bounty bounty = playerBounties.get(targetId);
-		Player targetPlayer = Players.getPlayer(targetId);
-		Player huntingPlayer = Players.getPlayer(hunterId);
-		if ((targetPlayer == null) || huntingPlayer == null) {
+		Bounty bounty = playerBounties.remove(targetId);
+		Player target = Players.getPlayer(targetId);
+		Player hunting = Players.getPlayer(hunterId);
+		if ((target == null) || hunting == null) {
 			return false;
 		}
+		Hunter huntingPlayer = Hunters.getData(targetId);
+		Hunter targetPlayer = Hunters.getData(target);
+		huntingPlayer.removeBounty(bounty);
+		String targetName = target.getName();
+		String hunterName = hunting.getName();
 
-		String targetName = targetPlayer.getName();
-		String hunterName = huntingPlayer.getName();
-
-		EconomyResponse withdrawResponse = Bounteh.economy.withdrawPlayer(targetPlayer.getName(), bounty.getDeathPenalty());
+		EconomyResponse withdrawResponse = Bounteh.economy.withdrawPlayer(target.getName(), bounty.getDeathPenalty());
 		//Debug the withdraw response
-		Commons.debug("Withdraw economy response:", " - Amount: " + withdrawResponse.amount, " - Balance: " + withdrawResponse.balance, " - Response Type: " + withdrawResponse.type.name(), " - Error Message: " + withdrawResponse.errorMessage);
-		EconomyResponse depositResponse = Bounteh.economy.depositPlayer(huntingPlayer.getName(), bounty.getWorth());
+		Commons.debug("Withdraw economy response (for death penalty) on bounty for " + targetName, " - Amount: " + withdrawResponse.amount, " - Balance: " + withdrawResponse.balance, " - Response Type: " + withdrawResponse.type.name(), " - Error Message: " + withdrawResponse.errorMessage);
+		EconomyResponse depositResponse = Bounteh.economy.depositPlayer(hunting.getName(), bounty.getWorth());
 		//Debug the deposit response
-		Commons.debug("Deposit economy response:", " - Amount: " + depositResponse.amount, " - Balance: " + depositResponse.balance, " - Response Type: " + depositResponse.type.name(), " - Error Message: " + depositResponse.errorMessage);
+		Commons.debug("Deposit economy response (for killing " + targetName + ") given to " + hunterName + ": ", " - Amount: " + depositResponse.amount, " - Balance: " + depositResponse.balance, " - Response Type: " + depositResponse.type.name(), " - Error Message: " + depositResponse.errorMessage);
 		Chat.broadcast(BountyMessages.bountyCompleted(hunterName, targetName, bounty.getWorth()));
 		//Update the status of the bounty in the database
 		Commons.threadManager.runTaskAsynch(new UpdateBountyStatusThread(true, bounty.getBountyId()));
@@ -86,8 +88,17 @@ public class BountyManager {
 		return playerBounties.containsKey(id);
 	}
 
-	public static Bounty getBounty(UUID id) {
-		return playerBounties.get(id);
+	public static Bounty getBounty(UUID playerId) {
+		return playerBounties.get(playerId);
+	}
+
+	public static Bounty getBountyById(UUID id) {
+		for(Bounty b : playerBounties.values()) {
+			if (b.getBountyId().equals(id)) {
+				return b;
+			}
+		}
+		return null;
 	}
 
 	public static Collection<Bounty> getBounties() {

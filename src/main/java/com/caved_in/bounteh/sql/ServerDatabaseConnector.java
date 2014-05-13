@@ -65,9 +65,9 @@ public class ServerDatabaseConnector extends DatabaseConnector {
 			ResultSet resultSet = statement.executeQuery();
 			if (resultSet.next()) {
 				bounty = new BountyBuilder(UUID.fromString(resultSet.getString("bounty_id")))
-						.withTarget(playerId)
-						.withIssuer(UUID.fromString(resultSet.getString("bnty_issuer_id")))
-						.withAmount(resultSet.getDouble("bnty_worth"))
+						.targetId(playerId)
+						.issuerId(UUID.fromString(resultSet.getString("bnty_issuer_id")))
+						.worth(resultSet.getDouble("bnty_worth"))
 						.build();
 			}
 		} catch (SQLException e) {
@@ -104,9 +104,9 @@ public class ServerDatabaseConnector extends DatabaseConnector {
 			ResultSet results = statement.executeQuery();
 			while (results.next()) {
 				Bounty bounty = new BountyBuilder(UUID.fromString(results.getString("bounty_id")))
-						.withTarget(UUID.fromString(results.getString("target_id")))
-						.withIssuer(id)
-						.withAmount(results.getDouble("bnty_worth"))
+						.targetId(UUID.fromString(results.getString("target_id")))
+						.issuerId(id)
+						.worth(results.getDouble("bnty_worth"))
 						.issuedOn(results.getLong("bnty_time_issued"))
 						.expiresOn(results.getLong("bnty_time_expire"))
 						.build();
@@ -128,9 +128,9 @@ public class ServerDatabaseConnector extends DatabaseConnector {
 			ResultSet results = statement.executeQuery();
 			while (results.next()) {
 				Bounty bounty = new BountyBuilder(UUID.fromString(results.getString("bounty_id")))
-						.withTarget(UUID.fromString(results.getString("target_id")))
-						.withIssuer(UUID.fromString(results.getString("bnty_issuer_id")))
-						.withAmount(results.getDouble("bnty_worth"))
+						.targetId(UUID.fromString(results.getString("target_id")))
+						.issuerId(UUID.fromString(results.getString("bnty_issuer_id")))
+						.worth(results.getDouble("bnty_worth"))
 						.issuedOn(results.getLong("bnty_time_issued"))
 						.expiresOn(results.getLong("bnty_time_expire"))
 						.build();

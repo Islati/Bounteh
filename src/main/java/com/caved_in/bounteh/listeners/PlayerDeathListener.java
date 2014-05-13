@@ -1,5 +1,6 @@
 package com.caved_in.bounteh.listeners;
 
+import com.caved_in.bounteh.bounties.Bounty;
 import com.caved_in.bounteh.bounties.BountyManager;
 import com.caved_in.commons.item.Items;
 import org.bukkit.entity.Player;
@@ -20,10 +21,20 @@ public class PlayerDeathListener implements Listener {
 			return;
 		}
 
-		String playerName = player.getName();
-		//Make the players head to be added to the drops
-		ItemStack playerHead = Items.getSkull(playerName);
-		event.getDrops().add(playerHead);
+		Player killer = player.getKiller();
+		if (killer == null) {
+			return;
+		}
+
+		Bounty bounty = BountyManager.getBounty(targetId);
+		if (!bounty.isHunter(killer)) {
+			return;
+		}
+
+//		String playerName = player.getName();
+//		//Make the players head to be added to the drops
+//		ItemStack playerHead = Items.getSkull(playerName);
+//		event.getDrops().add(playerHead);
 		//Complete the bounty, assign rewards, etc
 		BountyManager.completeBounty(targetId,player.getKiller().getUniqueId());
 	}

@@ -18,16 +18,11 @@ import com.caved_in.commons.menu.ItemFormat;
 import com.caved_in.commons.menu.Menus;
 import com.caved_in.commons.menu.PageDisplay;
 import com.caved_in.commons.player.Players;
-import com.caved_in.commons.threading.tasks.CallableGetPlayerUuid;
 import com.caved_in.commons.time.TimeHandler;
 import com.caved_in.commons.time.TimeType;
 import com.caved_in.commons.utilities.StringUtil;
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import net.milkbowl.vault.economy.Economy;
-import org.apache.commons.lang.time.DateFormatUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -70,6 +65,10 @@ public class BountyCommand {
 		//Get all the bounties and sort them
 		List<Bounty> bountiesList = new ArrayList<>();
 		bountiesList.addAll(BountyManager.getActiveBounties());
+		if (bountiesList.size() == 0) {
+			Players.sendMessage(player, "&eThere's currently no active bounties.");
+			return;
+		}
 		Collections.sort(bountiesList);
 
 		HelpScreen bountyList = Menus.generateHelpScreen("Available Bounties",PageDisplay.DEFAULT,ItemFormat.SINGLE_DASH,ChatColor.YELLOW);
@@ -80,8 +79,8 @@ public class BountyCommand {
 			}
 
 			Player targetPlayer = Players.getPlayer(targetId);
-			//If the player issueing the command is the issuer of the bounty, show them they're the owner
-			String formatString = playerId == bounty.getIssuerId() ? "Fee: %s" : "Fee: %s &7(posted by you)";
+			//If the player issueing the command is the issuerId of the bounty, show them they're the owner
+			String formatString = !playerId.equals(bounty.getIssuerId()) ? "Fee: %s" : "Fee: %s &7(posted by you)";
 			String bountyValue = Bounteh.economy.format(bounty.getWorth());
 			bountyList.setEntry(targetPlayer.getName(),String.format(formatString, bountyValue));
 		}
@@ -137,7 +136,7 @@ public class BountyCommand {
 		}
 
 		Bounty bounty = BountyManager.getBounty(targetPlayer);
-		if (bounty.isHunter(targetPlayer)) {
+		if (bounty.isHunter(player)) {
 			Players.sendMessage(player, "&eYou're already pursuing this bounty.");
 			return;
 		}
@@ -157,13 +156,13 @@ public class BountyCommand {
 
 		Economy economy = Bounteh.economy;
 		double contractFee = bounty.getContractFee();
-		if (economy.getBalance(player) < contractFee) {
+		if (economy.getBalance(playerName) < contractFee) {
 			Players.sendMessage(player, "&eYou don't have enough funds to pursue this bounty.");
 			return;
 		}
 
-		economy.withdrawPlayer(player,contractFee);
-		bounty.addHunter(player);
+		economy.withdrawPlayer(playerName,contractFee);
+		hunter.huntBounty(bounty);
 		Players.sendMessage(player,
 				String.format("&aBounty Accepted. You've been charged &e%s",contractFee),
 				String.format("&aYour target is &e%s&a. This bounty expires in %s",targetPlayer.getName(), TimeHandler.timeDurationToWords(bounty.getExpireTime()))
@@ -228,7 +227,7 @@ public class BountyCommand {
 				Bounty pendingBounty = BountyManager.getPendingBounty(playerId);
 				BountyManager.confirmPendingBounty(playerId);
 				//Message the player confirming the bounty
-				Players.sendMessage(player,BountyMessages.pendingBountyConfirmed(pendingBounty.getPlayerName(),pendingBounty.getWorth(),pendingBounty.getPostingFee()));
+				Players.sendMessage(player,BountyMessages.pendingBountyConfirmed(pendingBounty.getTargetName(),pendingBounty.getWorth(),pendingBounty.getPostingFee()));
 				//Broadcast that a new bounty has been issued
 				Players.messageAll(BountyMessages.broadcastBountyPlaced(pendingBounty.getWorth()));
 				//Create a new thread to insert the bounty to the database
@@ -261,12 +260,12 @@ public class BountyCommand {
 
 				//Create the bounty based on the players input
 				Bounty bounty = new BountyBuilder(UUID.randomUUID())
-						.withIssuer(playerId)
-						.withTarget(bountyTarget.getUniqueId())
+						.issuer(player)
+						.target(bountyTarget)
 						.issuedOn(System.currentTimeMillis())
 						//Bounties auto-expire in 1 week
 						.expiresOn(System.currentTimeMillis() + TimeHandler.getTimeInMilles(1, TimeType.WEEK))
-						.withAmount(bountyAmount)
+						.worth(bountyAmount)
 						.build();
 				BountyManager.addPendingBounty(playerId,bounty);
 				Players.sendMessage(player,"&aPlease do &e/bounty place confirm &ato accept, or &e/bounty place cancel&a to cancel");
@@ -343,9 +342,13 @@ public class BountyCommand {
 			//Loop through all the hunters and give their last known location
 			for(UUID id : hunter.getHuntingBounties()) {
 				hunterNumber += 1;
-				Bounty bounty = BountyManager.getBounty(id);
+				Bounty bounty = BountyManager.getBountyById(id);
+				if (bounty == null) {
+					Commons.debug("[ERROR] Apparantly the bounty " + id.toString() + " is null... Please message Brandon ASAP");
+					continue;
+				}
 				UUID targetId = bounty.getTargetId();
-				Players.sendMessage(player, String.format("&f%s. &e%s: %s",hunterNumber,bounty.getTargetName(),Players.isOnline(targetId) ? Messages.locationCoords(Players.getPlayer(targetId).getLocation()) : "offline"));
+				Players.sendMessage(player, String.format("&f%s. &6%s: &e%s",hunterNumber,bounty.getTargetName(),Players.isOnline(targetId) ? Messages.locationCoords(Players.getPlayer(targetId).getLocation()) : "offline"));
 			}
 			return;
 		}
@@ -369,6 +372,6 @@ public class BountyCommand {
 
 		Location targetLocation = Locations.getRoundedCompassLocation(targetPlayer.getLocation(),Bounteh.getConfiguration().getLocationRounding());
 		player.setCompassTarget(targetLocation);
-		Players.sendMessage(player,"&aYour compass now points at &e%s",targetName);
+		Players.sendMessage(player,String.format("&aYour compass now points at &e%s",targetName));
 	}
 }

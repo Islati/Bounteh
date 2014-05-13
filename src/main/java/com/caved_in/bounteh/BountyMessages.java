@@ -9,7 +9,7 @@ import java.util.List;
 import static java.util.Arrays.*;
 
 public class BountyMessages {
-	private static final String MESSAGE_PREFIX = "&7[&eBounty&7] &r";
+	private static final String MESSAGE_PREFIX = "&8[&6Bounty&8] &r";
 	public static String NO_PENDING_BOUNTY = "&eYou don't have any bounties requiring confirmation, sorry.";
 
 	public static String PLAYER_NO_ACTIVE_BOUNTIES = "&eYou currently don't have any active bounties";
@@ -20,13 +20,13 @@ public class BountyMessages {
 
 	public static String[] pendingBountyConfirmed(String name, double amount, double postingFee) {
 		return new String[] {
-				String.format("&7Placed a bounty on %s's head for %s.",name,amount),
-				String.format("&7You've been charged %s for posting this bounty.", postingFee)
+				String.format("&7Placed a bounty on %s's head for %s.",name,Bounteh.economy.format(amount)),
+				String.format("&7You've been charged %s for posting this bounty.", Bounteh.economy.format(postingFee))
 		};
 	}
 
 	public static String broadcastBountyPlaced(double amount) {
-		return String.format("%s&7A new bounty has been placed %s",MESSAGE_PREFIX, amount);
+		return String.format("%s&eA bounty worth &6%s&e been issued!",MESSAGE_PREFIX, Bounteh.economy.format(amount));
 	}
 
 	public static String pendingBountyAborted(String name, double amount) {
