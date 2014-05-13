@@ -14,9 +14,9 @@ public class PlayerDeathListener implements Listener {
 	@EventHandler
 	public void onEvent(PlayerDeathEvent event) {
 		Player player = event.getEntity();
-		UUID playerId = player.getUniqueId();
+		UUID targetId = player.getUniqueId();
 		//If the player doesn't have a bounty, then cancel execution
-		if (!BountyManager.playerHasActiveBounty(playerId)) {
+		if (!BountyManager.isPlayerTarget(targetId)) {
 			return;
 		}
 
@@ -24,5 +24,7 @@ public class PlayerDeathListener implements Listener {
 		//Make the players head to be added to the drops
 		ItemStack playerHead = Items.getSkull(playerName);
 		event.getDrops().add(playerHead);
+		//Complete the bounty, assign rewards, etc
+		BountyManager.completeBounty(targetId,player.getKiller().getUniqueId());
 	}
 }

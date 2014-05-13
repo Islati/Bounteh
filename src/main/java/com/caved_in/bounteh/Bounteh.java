@@ -2,15 +2,22 @@ package com.caved_in.bounteh;
 
 import com.caved_in.bounteh.bounties.Bounty;
 import com.caved_in.bounteh.bounties.BountyManager;
+import com.caved_in.bounteh.commands.BountyCommand;
 import com.caved_in.bounteh.config.Configuration;
+import com.caved_in.bounteh.listeners.PlayerDeathListener;
 import com.caved_in.bounteh.listeners.PlayerJoinListener;
+import com.caved_in.bounteh.listeners.PlayerQuitListener;
 import com.caved_in.bounteh.sql.ServerDatabaseConnector;
-import com.caved_in.bounteh.threads.RetrieveIssuedBountiesCallable;
+import com.caved_in.bounteh.threads.BountyExpirationCheckThread;
+import com.caved_in.bounteh.threads.GetAllBountiesCallable;
 import com.caved_in.commons.Commons;
+import com.caved_in.commons.commands.CommandController;
 import com.caved_in.commons.config.SqlConfiguration;
 import com.caved_in.commons.plugin.Plugins;
 import com.caved_in.commons.threading.executors.BukkitExecutors;
 import com.caved_in.commons.threading.executors.BukkitScheduledExecutorService;
+import com.caved_in.commons.time.TimeHandler;
+import com.caved_in.commons.time.TimeType;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -36,6 +43,7 @@ public class Bounteh extends JavaPlugin {
 		if (!setupEconomy()) {
 			Commons.messageConsole("Failed to setup / hook vault economy");
 			Plugins.disablePlugin(this);
+			return;
 		}
 		async = BukkitExecutors.newAsynchronous(this);
 
@@ -46,24 +54,29 @@ public class Bounteh extends JavaPlugin {
 			return;
 		}
 
+		//Register the listeners
 		registerListeners();
+		//Register the bounty commands
+		CommandController.registerCommands(this, new BountyCommand());
+		//Create the server database connector
 		database = new ServerDatabaseConnector(configuration.getSqlConfig());
 
-		ListenableFuture<Set<Bounty>> retrieveActiveBountiesListenable = async.submit(new RetrieveIssuedBountiesCallable());
-		Futures.addCallback(retrieveActiveBountiesListenable, new FutureCallback<Set<Bounty>>() {
+		//Load all the bounties in the database into memory, for performance / synchronization concerns
+		ListenableFuture<Set<Bounty>> getBountiesListener = async.submit(new GetAllBountiesCallable());
+		Futures.addCallback(getBountiesListener, new FutureCallback<Set<Bounty>>() {
 			@Override
 			public void onSuccess(Set<Bounty> bounties) {
-				for (Bounty bounty : bounties) {
-					BountyManager.addPlayerBounty(bounty);
-				}
+				bounties.forEach(BountyManager::addBounty);
 				Commons.messageConsole("Loaded in " + bounties.size() + " bounties from the databases");
 			}
 
 			@Override
 			public void onFailure(Throwable throwable) {
-
 			}
 		});
+
+		//Create the task to check for expired bounties
+		Commons.threadManager.registerSynchRepeatTask("Bounty Expiration Check",new BountyExpirationCheckThread(), TimeHandler.getTimeInTicks(10, TimeType.MINUTE),TimeHandler.getTimeInTicks(2,TimeType.MINUTE));
 	}
 
 	@Override
@@ -80,9 +93,9 @@ public class Bounteh extends JavaPlugin {
 		}
 
 		try {
-			File configFile = new File(getDataFolder() + "Config.xml");
+			File configFile = new File(getDataFolder() + "/Config.xml");
 			if (!configFile.exists()) {
-				configSerializer.write(new SqlConfiguration(), configFile);
+				configSerializer.write(new Configuration(), configFile);
 			}
 			configuration = configSerializer.read(Configuration.class, configFile);
 			return true;
@@ -93,7 +106,11 @@ public class Bounteh extends JavaPlugin {
 	}
 
 	private void registerListeners() {
-		Commons.registerListener(this, new PlayerJoinListener());
+		Plugins.registerListeners(this,
+				new PlayerJoinListener(),
+				new PlayerDeathListener(),
+				new PlayerQuitListener()
+		);
 	}
 
 	public static Configuration getConfiguration() {

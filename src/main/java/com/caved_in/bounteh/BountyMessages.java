@@ -1,6 +1,12 @@
 package com.caved_in.bounteh;
 
 import com.caved_in.bounteh.bounties.Bounty;
+import com.caved_in.commons.Messages;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import static java.util.Arrays.*;
 
 public class BountyMessages {
 	private static final String MESSAGE_PREFIX = "&7[&eBounty&7] &r";
@@ -29,5 +35,15 @@ public class BountyMessages {
 
 	public static String bountyCompleted(String hunterName, String targetName, double worth) {
 		return String.format("%s&e%s has collected a bounty on %s for %s",MESSAGE_PREFIX, hunterName,targetName,Bounteh.economy.format(worth));
+	}
+
+	public static List<String> bountyInfo(Bounty bounty) {
+		List<String> bountyInfo = new ArrayList<>();
+		bountyInfo.addAll(asList(
+				String.format("%sTarget Name: %s",Messages.YELLOW_INDENT_ARROW,bounty.getTargetName()),
+				String.format("%sIssuer Name: %s",Messages.YELLOW_INDENT_ARROW,bounty.getPlayerName()),
+				String.format("%sBounty Worth: %s",Messages.YELLOW_INDENT_ARROW,Bounteh.economy.format(bounty.getWorth()))
+		));
+		return bountyInfo;
 	}
 }

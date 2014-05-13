@@ -5,3 +5,12 @@ description: Bounty Hunting Plugin
 author: Brandon Curtis
 softdepend: []
 depend: [Vault, Commons]
+commands:
+  bounty:
+    description: Handle all actions related to bounty hunting
+    usage: /<command> <PlayerName>
+permissions:
+  bounty.accept:
+    description: Allows players to accept and pursue bounties
+  bounty.locate:
+    description: Allows players to locate the targets of their active bounty

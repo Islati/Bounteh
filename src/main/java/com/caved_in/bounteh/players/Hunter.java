@@ -87,7 +87,7 @@ public class Hunter {
 	}
 
 	public boolean hasActiveBounty() {
-		return BountyManager.playerHasActiveBounty(id);
+		return BountyManager.isPlayerTarget(id);
 	}
 
 	public boolean hasIssuedBounty() {
@@ -95,7 +95,7 @@ public class Hunter {
 	}
 
 	public Bounty getActiveBounty() {
-		return BountyManager.getPlayerBounty(id);
+		return BountyManager.getBounty(id);
 	}
 
 	public void addIssuedBounty(Bounty bounty) {
@@ -104,6 +104,15 @@ public class Hunter {
 
 	public boolean isHunterOn(Bounty bounty) {
 		return huntingBounties.contains(bounty.getBountyId());
+	}
+
+	public boolean isHunting(String playerName) {
+		for(Bounty bounty : BountyManager.getBountiesById(huntingBounties)) {
+			if (bounty.getTargetName().equalsIgnoreCase(playerName)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void huntBounty(Bounty bounty) {
@@ -121,4 +130,6 @@ public class Hunter {
 	public void abandonBounty(UUID id) {
 		huntingBounties.remove(id);
 	}
+
+
 }

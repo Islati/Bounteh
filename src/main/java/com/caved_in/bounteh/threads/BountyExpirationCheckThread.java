@@ -12,6 +12,7 @@ public class BountyExpirationCheckThread implements Runnable {
 				continue;
 			}
 
+			BountyManager.expireBounty(bounty);
 		}
 	}
 }

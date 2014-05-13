@@ -2,10 +2,14 @@ package com.caved_in.bounteh.bounties;
 
 import com.caved_in.bounteh.Bounteh;
 import com.caved_in.bounteh.config.Configuration;
+import com.caved_in.bounteh.threads.AddHunterToBountyThread;
+import com.caved_in.bounteh.threads.RemoveHunterFromBountyThread;
+import com.caved_in.commons.Commons;
 import com.caved_in.commons.utilities.StringUtil;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -22,7 +26,7 @@ public class Bounty implements Comparable<Bounty> {
 	private double contractFee = -1;
 	private double postingFee = -1;
 	private double deathPenaltyFee = -1;
-
+	private boolean initialized = false;
 	private Set<UUID> hunters = new HashSet<>();
 
 	public Bounty(UUID bountyId) {
@@ -113,12 +117,34 @@ public class Bounty implements Comparable<Bounty> {
 		}
 	}
 
-	public void addHunter(Player player) {
-		addHunter(player.getUniqueId());
+	public boolean addHunter(Player player) {
+		return addHunter(player.getUniqueId());
 	}
 
-	public void addHunter(UUID id) {
+	public boolean addHunter(UUID id) {
+		if (isHunter(id) || !isInitialized()) {
+			return false;
+		}
 		hunters.add(id);
+		Commons.threadManager.runTaskAsynch(new AddHunterToBountyThread(id,bountyId));
+		return true;
+	}
+
+	public boolean removeHunter(Player player) {
+		return removeHunter(player.getUniqueId());
+	}
+
+	public boolean removeHunter(UUID id) {
+		if (!isHunter(id) || !isInitialized()) {
+			return false;
+		}
+		hunters.remove(id);
+		Commons.threadManager.runTaskAsynch(new RemoveHunterFromBountyThread(bountyId,id));
+		return true;
+	}
+
+	public void initHunters(Collection<UUID> ids) {
+		hunters.addAll(ids);
 	}
 
 
@@ -159,7 +185,7 @@ public class Bounty implements Comparable<Bounty> {
 	public String toString() {
 		return "Bounty [Target ID: " + getTargetId().toString() + "]\n"
 				+ "Worth: " + Bounteh.economy.format(getWorth()) + "\n"
-				+ "Hunters: [" + StringUtil.joinString(hunters,",",0);
+				+ "Hunters: [" + StringUtil.joinString(hunters,",",0) + "]";
 	}
 
 	public String getPlayerName() {
@@ -172,5 +198,29 @@ public class Bounty implements Comparable<Bounty> {
 
 	public void setTargetName(String targetName) {
 		this.targetName = targetName;
+	}
+
+	public boolean isInitialized() {
+		return initialized;
+	}
+
+	public void setInitialized(boolean initialized) {
+		this.initialized = initialized;
+	}
+
+	public Set<UUID> getHunters() {
+		return hunters;
+	}
+
+	public double getReturnAmount() {
+		return getWorth() - (getWorth() + getPostingFee()) * Bounteh.getConfiguration().getCancellationFeePercent();
+	}
+
+	public double getInconvienance(int hunterAmount) {
+		return Math.round(Math.floor(getWorth() / hunterAmount));
+	}
+
+	public double getCancellationFee() {
+		return (int)((getWorth() + getPostingFee()) * Bounteh.getConfiguration().getCancellationFeePercent());
 	}
 }
