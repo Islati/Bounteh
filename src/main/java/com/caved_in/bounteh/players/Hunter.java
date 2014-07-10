@@ -24,7 +24,7 @@ public class Hunter {
 
 	private void initPlayer() {
 		/* Retrieve a set of all the bounties the player has issued */
-		Commons.threadManager.runTaskAsynch(() -> {
+		Commons.threadManager.runTaskAsync(() -> {
 			issuedBounties.addAll(Bounteh.database.getPlayerIssuedBounties(id));
 			huntingBounties.addAll(Bounteh.database.getBountiesPlayerHasActive(id));
 			Commons.debug(

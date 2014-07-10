@@ -12,8 +12,7 @@ import com.caved_in.bounteh.sql.ServerDatabaseConnector;
 import com.caved_in.bounteh.threads.BountyExpirationCheckThread;
 import com.caved_in.bounteh.threads.GetAllBountiesCallable;
 import com.caved_in.commons.Commons;
-import com.caved_in.commons.commands.CommandController;
-import com.caved_in.commons.config.SqlConfiguration;
+import com.caved_in.commons.command.CommandController;
 import com.caved_in.commons.player.Players;
 import com.caved_in.commons.plugin.Plugins;
 import com.caved_in.commons.threading.executors.BukkitExecutors;
@@ -79,7 +78,7 @@ public class Bounteh extends JavaPlugin {
 		});
 
 		//Create the task to check for expired bounties
-		Commons.threadManager.registerSynchRepeatTask("Bounty Expiration Check",new BountyExpirationCheckThread(), TimeHandler.getTimeInTicks(10, TimeType.MINUTE),TimeHandler.getTimeInTicks(2,TimeType.MINUTE));
+		Commons.threadManager.registerSyncRepeatTask("Bounty Expiration Check", new BountyExpirationCheckThread(), TimeHandler.getTimeInTicks(10, TimeType.MINUTE), TimeHandler.getTimeInTicks(2, TimeType.MINUTE));
 
 		for (Player player : Players.allPlayers()) {
 			Hunters.addData(player);

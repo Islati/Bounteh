@@ -30,7 +30,7 @@ public class BountyManager {
 	private static List<Bounty> sortedBounties = new ArrayList<>();
 
 	public static void initBounty(final Bounty bounty) {
-		Commons.threadManager.runTaskAsynch(new InitBountyThread(bounty));
+		Commons.threadManager.runTaskAsync(new InitBountyThread(bounty));
 	}
 
 	public static boolean completeBounty(UUID targetId, UUID hunterId) {
@@ -54,7 +54,7 @@ public class BountyManager {
 		Commons.debug("Deposit economy response (for killing " + targetName + ") given to " + hunterName + ": ", " - Amount: " + depositResponse.amount, " - Balance: " + depositResponse.balance, " - Response Type: " + depositResponse.type.name(), " - Error Message: " + depositResponse.errorMessage);
 		Chat.broadcast(BountyMessages.bountyCompleted(hunterName, targetName, bounty.getWorth()));
 		//Update the status of the bounty in the database
-		Commons.threadManager.runTaskAsynch(new UpdateBountyStatusThread(true, bounty.getBountyId()));
+		Commons.threadManager.runTaskAsync(new UpdateBountyStatusThread(true, bounty.getBountyId()));
 		return true;
 	}
 

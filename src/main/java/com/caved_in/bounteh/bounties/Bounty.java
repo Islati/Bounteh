@@ -126,7 +126,7 @@ public class Bounty implements Comparable<Bounty> {
 			return false;
 		}
 		hunters.add(id);
-		Commons.threadManager.runTaskAsynch(new AddHunterToBountyThread(id,bountyId));
+		Commons.threadManager.runTaskAsync(new AddHunterToBountyThread(id,bountyId));
 		return true;
 	}
 
@@ -139,7 +139,7 @@ public class Bounty implements Comparable<Bounty> {
 			return false;
 		}
 		hunters.remove(id);
-		Commons.threadManager.runTaskAsynch(new RemoveHunterFromBountyThread(bountyId,id));
+		Commons.threadManager.runTaskAsync(new RemoveHunterFromBountyThread(bountyId,id));
 		return true;
 	}
 
