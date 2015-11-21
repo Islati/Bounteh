@@ -1,6 +1,6 @@
 name: Bounteh
 main: com.caved_in.bounteh.Bounteh
-version: 1.0.0
+version: 1.1.0
 description: Bounty Hunting Plugin
 author: Brandon Curtis
 softdepend: []

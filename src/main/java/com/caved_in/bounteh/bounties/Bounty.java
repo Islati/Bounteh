@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public class Bounty implements Comparable<Bounty> {
+
 	private String playerName;
 	private UUID bountyId = null;
 	private UUID targetId;
@@ -126,7 +127,7 @@ public class Bounty implements Comparable<Bounty> {
 			return false;
 		}
 		hunters.add(id);
-		Commons.threadManager.runTaskAsync(new AddHunterToBountyThread(id,bountyId));
+		Bounteh.getInstance().getThreadManager().runTaskAsync(new AddHunterToBountyThread(id, bountyId));
 		return true;
 	}
 
@@ -139,7 +140,7 @@ public class Bounty implements Comparable<Bounty> {
 			return false;
 		}
 		hunters.remove(id);
-		Commons.threadManager.runTaskAsync(new RemoveHunterFromBountyThread(bountyId,id));
+		Bounteh.getInstance().getThreadManager().runTaskAsync(new RemoveHunterFromBountyThread(bountyId, id));
 		return true;
 	}
 

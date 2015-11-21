@@ -2,6 +2,7 @@ package com.caved_in.bounteh.threads;
 
 import com.caved_in.bounteh.Bounteh;
 import com.caved_in.commons.Commons;
+import com.caved_in.commons.chat.Chat;
 
 import java.util.UUID;
 
@@ -16,8 +17,8 @@ public class RemoveHunterFromBountyThread implements Runnable {
 
 	@Override
 	public void run() {
-		Commons.debug("Began removing " + playerId.toString() + " from " + bountyId.toString());
+		Chat.debug("Began removing " + playerId.toString() + " from " + bountyId.toString());
 		Bounteh.database.removeHunterFromBounty(playerId,bountyId);
-		Commons.debug("Removed! Yays");
+		Chat.debug("Removed! Yays");
 	}
 }

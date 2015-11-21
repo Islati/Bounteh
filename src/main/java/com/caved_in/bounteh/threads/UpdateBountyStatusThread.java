@@ -2,6 +2,7 @@ package com.caved_in.bounteh.threads;
 
 import com.caved_in.bounteh.Bounteh;
 import com.caved_in.commons.Commons;
+import com.caved_in.commons.chat.Chat;
 
 import java.util.UUID;
 
@@ -17,6 +18,6 @@ public class UpdateBountyStatusThread implements Runnable {
 	@Override
 	public void run() {
 		boolean updatedStatus = Bounteh.database.setBountyCompleted(bountyId,bountyFilled);
-		Commons.debug("Updated bounty status for " + bountyId.toString() + " is " + String.valueOf(updatedStatus));
+		Chat.debug("Updated bounty status for " + bountyId.toString() + " is " + String.valueOf(updatedStatus));
 	}
 }

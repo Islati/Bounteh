@@ -1,0 +1,3 @@
+- Remove the SQL by default storage; Use file storage instead?
++ Implement MongoDB as storage.
++ Implement Redis for cross server bounties (ontop of mongo)

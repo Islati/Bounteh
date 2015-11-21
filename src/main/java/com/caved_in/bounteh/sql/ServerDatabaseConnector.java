@@ -3,6 +3,7 @@ package com.caved_in.bounteh.sql;
 import com.caved_in.bounteh.bounties.Bounty;
 import com.caved_in.bounteh.bounties.BountyBuilder;
 import com.caved_in.commons.Commons;
+import com.caved_in.commons.chat.Chat;
 import com.caved_in.commons.config.SqlConfiguration;
 import com.caved_in.commons.event.StackTraceEvent;
 import com.caved_in.commons.sql.DatabaseConnector;
@@ -44,7 +45,7 @@ public class ServerDatabaseConnector extends DatabaseConnector {
 			PreparedStatement statement = prepareStatement(sqlStatement);
 			try {
 				statement.executeUpdate();
-				Commons.debug("Executed creation statement:",sqlStatement);
+				Chat.debug("Executed creation statement:", sqlStatement);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			} finally {

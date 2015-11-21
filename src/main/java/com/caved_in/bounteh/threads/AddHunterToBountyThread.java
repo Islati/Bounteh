@@ -2,6 +2,7 @@ package com.caved_in.bounteh.threads;
 
 import com.caved_in.bounteh.Bounteh;
 import com.caved_in.commons.Commons;
+import com.caved_in.commons.chat.Chat;
 
 import java.util.UUID;
 
@@ -17,6 +18,6 @@ public class AddHunterToBountyThread implements Runnable {
 	@Override
 	public void run() {
 		Bounteh.database.addHunterToBounty(playerId, bountyId);
-		Commons.debug("Added Player {%s} to the bounty %s",playerId.toString(),bountyId.toString());
+		Chat.debug("Added Player {%s} to the bounty %s", playerId.toString(), bountyId.toString());
 	}
 }

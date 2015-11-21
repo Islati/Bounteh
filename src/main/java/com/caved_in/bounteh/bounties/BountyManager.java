@@ -30,7 +30,7 @@ public class BountyManager {
 	private static List<Bounty> sortedBounties = new ArrayList<>();
 
 	public static void initBounty(final Bounty bounty) {
-		Commons.threadManager.runTaskAsync(new InitBountyThread(bounty));
+		Bounteh.getInstance().getThreadManager().runTaskAsync(new InitBountyThread(bounty));
 	}
 
 	public static boolean completeBounty(UUID targetId, UUID hunterId) {
@@ -48,13 +48,13 @@ public class BountyManager {
 
 		EconomyResponse withdrawResponse = Bounteh.economy.withdrawPlayer(target.getName(), bounty.getDeathPenalty());
 		//Debug the withdraw response
-		Commons.debug("Withdraw economy response (for death penalty) on bounty for " + targetName, " - Amount: " + withdrawResponse.amount, " - Balance: " + withdrawResponse.balance, " - Response Type: " + withdrawResponse.type.name(), " - Error Message: " + withdrawResponse.errorMessage);
+		Chat.debug("Withdraw economy response (for death penalty) on bounty for " + targetName, " - Amount: " + withdrawResponse.amount, " - Balance: " + withdrawResponse.balance, " - Response Type: " + withdrawResponse.type.name(), " - Error Message: " + withdrawResponse.errorMessage);
 		EconomyResponse depositResponse = Bounteh.economy.depositPlayer(hunting.getName(), bounty.getWorth());
 		//Debug the deposit response
-		Commons.debug("Deposit economy response (for killing " + targetName + ") given to " + hunterName + ": ", " - Amount: " + depositResponse.amount, " - Balance: " + depositResponse.balance, " - Response Type: " + depositResponse.type.name(), " - Error Message: " + depositResponse.errorMessage);
+		Chat.debug("Deposit economy response (for killing " + targetName + ") given to " + hunterName + ": ", " - Amount: " + depositResponse.amount, " - Balance: " + depositResponse.balance, " - Response Type: " + depositResponse.type.name(), " - Error Message: " + depositResponse.errorMessage);
 		Chat.broadcast(BountyMessages.bountyCompleted(hunterName, targetName, bounty.getWorth()));
 		//Update the status of the bounty in the database
-		Commons.threadManager.runTaskAsync(new UpdateBountyStatusThread(true, bounty.getBountyId()));
+		Bounteh.getInstance().getThreadManager().runTaskAsync(new UpdateBountyStatusThread(true, bounty.getBountyId()));
 		return true;
 	}
 
@@ -66,7 +66,7 @@ public class BountyManager {
 		Stream<UUID> bountyHunterIdStream = bounty.getHunters().stream();
 		//Get all the online players and send them a message saying their bounty expired
 		Set<Player> onlineHunters = bountyHunterIdStream.filter(Players::isOnline).map(Players::getPlayer).collect(Collectors.toSet());
-		Players.messageAll(onlineHunters,String.format("&7[&eBounty&7] &eYour bounty on %s has expired",bounty.getTargetName()));
+		Chat.messageAll(onlineHunters,String.format("&7[&eBounty&7] &eYour bounty on %s has expired",bounty.getTargetName()));
 		//Remove the hunters from the bounty
 		bountyHunterIdStream.forEach(id -> bounty.removeHunter(Players.getPlayer(id)));
 	}
@@ -219,9 +219,9 @@ public class BountyManager {
 			}
 
 			Player hunter = Players.getPlayer(id);
-			Players.sendMessage(hunter, String.format("&aYour bounty on &e%s&a has been cancelled and the contract fee was refunded", bountyTarget));
+			Chat.message(hunter, String.format("&aYour bounty on &e%s&a has been cancelled and the contract fee was refunded", bountyTarget));
 			if (Bounteh.getConfiguration().payInconvienane() && inconvienance > 0) {
-				Players.sendMessage(hunter,"&7You've received &l%s&r&7 for the inconvenience");
+				Chat.message(hunter,"&7You've received &l%s&r&7 for the inconvenience");
 			}
 		}
 	}
